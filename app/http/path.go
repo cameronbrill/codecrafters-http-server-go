@@ -23,9 +23,10 @@ func validatePath(path string) error {
 type Path string
 
 const EchoPath Path = "/echo"
+const UserAgentPath Path = "/user-agent"
 const RootPath Path = "/"
 
-var paths map[string]Path = map[string]Path{"echo": EchoPath}
+var paths map[string]Path = map[string]Path{"echo": EchoPath, "user-agent": UserAgentPath}
 
 func identifyPath(path string) (Path, string, error) {
 	if path == string(RootPath) {

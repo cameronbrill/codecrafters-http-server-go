@@ -38,6 +38,9 @@ func (r Request) BuildResponse() Response {
 	if pathIdentifier == EchoPath {
 		resp.SetBody(pathItems)
 	}
+	if pathIdentifier == UserAgentPath {
+		resp.SetBody(r.Headers["User-Agent"])
+	}
 
 	return resp
 }
