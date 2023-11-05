@@ -57,14 +57,10 @@ func HandleConnection(conn net.Conn) error {
 		return fmt.Errorf("parsing request buffer: %w", err)
 	}
 
-	fmt.Println("validating request")
-	err = req.Validate()
-	if err != nil {
-		return fmt.Errorf("validating request: %w", err)
-	}
+	fmt.Println("validating request & building response")
+	resp := req.BuildResponse()
 
 	fmt.Println("writing data to connection")
-	resp := NewResponse(200, "GET", "OK")
 	_, err = conn.Write(resp.Bytes())
 	if err != nil {
 		return fmt.Errorf("writing response: %w", err)

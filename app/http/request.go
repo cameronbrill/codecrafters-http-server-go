@@ -27,12 +27,20 @@ func validatePath(path string) error {
 	return nil
 }
 
-func (r Request) Validate() error {
+func (r Request) BuildResponse() Response {
+	resp := Response{
+		HttpVersion: r.HttpVersion,
+		StatusCode:  200,
+		Message:     "OK",
+	}
 	err := validatePath(r.Path)
 	if err != nil {
-		return fmt.Errorf("validating path: %w", err)
+		if errors.Is(err, PathNotFoundError) {
+			resp.StatusCode = 404
+			resp.Message = "Not Found"
+		}
 	}
-	return nil
+	return resp
 }
 
 func (r *Request) parseStartLine(line string) error {
