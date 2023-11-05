@@ -1,10 +1,11 @@
 package http
 
 import (
+	"fmt"
 	"io"
 	"net"
 
-	"github.com/pkg/errors"
+	"errors"
 )
 
 func HandleConnection(conn net.Conn) error {
@@ -16,7 +17,7 @@ func HandleConnection(conn net.Conn) error {
 		n, err := conn.Read(tmp)
 		if err != nil {
 			if !errors.Is(err, io.EOF) {
-				return errors.Wrap(err, "read error")
+				return fmt.Errorf("reading response chunk: %w", err)
 			}
 			break
 		}
@@ -26,7 +27,7 @@ func HandleConnection(conn net.Conn) error {
 	resp := NewResponse(200, "GET", "OK")
 	_, err := conn.Write(resp.Bytes())
 	if err != nil {
-		return errors.Wrap(err, "writing response")
+		return fmt.Errorf("writing response: %w", err)
 	}
 
 	return nil
