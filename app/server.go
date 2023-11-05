@@ -12,27 +12,31 @@ func main() {
 	fmt.Println("starting server")
 	l, err := net.Listen("tcp", "0.0.0.0:4221")
 	if err != nil {
-		fmt.Println("Failed to bind to port 4221")
+		fmt.Println("ERROR Failed to bind to port 4221")
 		os.Exit(1)
 	}
+
 	defer func() {
+		fmt.Println("closing tcp listener")
 		err = l.Close()
 		if err != nil {
-			fmt.Println("closing listener: ", err.Error())
+			fmt.Println("ERROR closing listener: ", err.Error())
 			os.Exit(1)
 		}
 	}()
 
 	for {
+		fmt.Println("waiting for connection")
 		conn, err := l.Accept()
 		if err != nil {
-			fmt.Println("Error accepting connection: ", err.Error())
+			fmt.Println("ERROR accepting connection: ", err.Error())
 			os.Exit(1)
 		}
 
+		fmt.Println("handling connection")
 		err = http.HandleConnection(conn)
 		if err != nil {
-			fmt.Println("handling connection: ", err.Error())
+			fmt.Println("ERROR handling connection: ", err.Error())
 			os.Exit(1)
 		}
 	}
