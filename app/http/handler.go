@@ -10,17 +10,10 @@ import (
 	"errors"
 )
 
-func HandleConnection(conn net.Conn) error {
-	defer conn.Close()
-
+func readData(conn net.Conn) ([]byte, error) {
 	fmt.Println("reading data from connection")
 	buf := make([]byte, 0, 4096) // big buffer
 	tmp := make([]byte, 256)     // using small tmo buffer for demonstrating
-	err := conn.SetReadDeadline(time.Now().Add(2 * time.Second))
-	if err != nil {
-		return fmt.Errorf("setting connection read deadline: %w", err)
-	}
-
 	for {
 
 		fmt.Println("reading data chunk")
@@ -34,14 +27,44 @@ func HandleConnection(conn net.Conn) error {
 				fmt.Printf("hit read deadline, end of reading data from connection")
 				break
 			}
-			return fmt.Errorf("reading response chunk: %w", err)
+			return nil, fmt.Errorf("reading response chunk: %w", err)
 		}
 		fmt.Println("appending data chunk to buffer")
 		buf = append(buf, tmp[:n]...)
 	}
 
-	resp := NewResponse(200, "GET", "OK")
+	return buf, nil
+}
+
+func HandleConnection(conn net.Conn) error {
+	defer conn.Close()
+
+	fmt.Println("configuring connection read deadline")
+	err := conn.SetReadDeadline(time.Now().Add(2 * time.Second))
+	if err != nil {
+		return fmt.Errorf("setting connection read deadline: %w", err)
+	}
+
+	fmt.Println("reading data from connection")
+	reqBuf, err := readData(conn)
+	if err != nil {
+		return fmt.Errorf("reading data from tcp connection: %w", err)
+	}
+
+	fmt.Println("parsing request data")
+	req, err := ParseRequestBuffer(reqBuf)
+	if err != nil {
+		return fmt.Errorf("parsing request buffer: %w", err)
+	}
+
+	fmt.Println("validating request")
+	err = req.Validate()
+	if err != nil {
+		return fmt.Errorf("validating request: %w", err)
+	}
+
 	fmt.Println("writing data to connection")
+	resp := NewResponse(200, "GET", "OK")
 	_, err = conn.Write(resp.Bytes())
 	if err != nil {
 		return fmt.Errorf("writing response: %w", err)
