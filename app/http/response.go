@@ -5,18 +5,18 @@ import "fmt"
 const HTTP1_1 = "HTTP/1.1"
 const CRLF = "\r\n"
 
-func NewResponse(statusCode int, method, message string) Response {
+func NewResponse(statusCode int, httpVersion, message string) Response {
 	return Response{
-		StatusCode: statusCode,
-		Method:     method,
-		Message:    message,
+		StatusCode:  statusCode,
+		HttpVersion: httpVersion,
+		Message:     message,
 	}
 }
 
 type Response struct {
-	StatusCode int
-	Method     string
-	Message    string
+	StatusCode  int
+	HttpVersion string
+	Message     string
 }
 
 func (r *Response) Bytes() []byte {
