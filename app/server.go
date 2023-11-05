@@ -37,7 +37,6 @@ func main() {
 		err = http.HandleConnection(conn)
 		if err != nil {
 			fmt.Println("ERROR handling connection: ", err.Error())
-			os.Exit(1)
 		}
 	}
 
