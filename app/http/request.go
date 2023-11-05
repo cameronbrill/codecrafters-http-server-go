@@ -13,6 +13,12 @@ type Request struct {
 	Headers     map[string]string
 }
 
+func NewRequest() Request {
+	return Request{
+		Headers: make(map[string]string),
+	}
+}
+
 func (r Request) BuildResponse() Response {
 	resp := NewResponse(
 		200,
@@ -49,8 +55,20 @@ func (r *Request) parseStartLine(line string) error {
 	return nil
 }
 
+func (r *Request) parseHeaderLine(line string) error {
+	parts := strings.Split(line, ": ")
+
+	if len(parts) != 2 {
+		return errors.New("invalid header line format")
+	}
+
+	r.Headers[parts[0]] = parts[1]
+	return nil
+}
+
 func ParseRequestBuffer(reqBuf []byte) (Request, error) {
-	var r *Request = &Request{}
+	req := NewRequest()
+	var r *Request = &req
 
 	reqStr := string(reqBuf)
 	fmt.Println("parsing request string: ", reqStr)
@@ -62,6 +80,11 @@ func ParseRequestBuffer(reqBuf []byte) (Request, error) {
 				return *r, fmt.Errorf("parsing start line: %w", err)
 			}
 		}
+
+		if len(reqLine) == 0 {
+			continue
+		}
+		r.parseHeaderLine(reqLine)
 	}
 
 	return *r, nil
