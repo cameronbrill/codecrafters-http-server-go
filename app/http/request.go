@@ -13,33 +13,26 @@ type Request struct {
 	Headers     map[string]string
 }
 
-var PathNotFoundError = errors.New("path not found")
-var EmptyPathError = errors.New("path cannot be empty")
-
-func validatePath(path string) error {
-	if path == "" {
-		return fmt.Errorf("%w: %s", EmptyPathError, path)
-	}
-	if path != "/" {
-		return fmt.Errorf("%w: %s", PathNotFoundError, path)
-	}
-
-	return nil
-}
-
 func (r Request) BuildResponse() Response {
-	resp := Response{
-		HttpVersion: r.HttpVersion,
-		StatusCode:  200,
-		Message:     "OK",
-	}
-	err := validatePath(r.Path)
+	resp := NewResponse(
+		200,
+		r.HttpVersion,
+		"OK",
+	)
+
+	fmt.Println("identifying path")
+	pathIdentifier, pathItems, err := identifyPath(r.Path)
 	if err != nil {
-		if errors.Is(err, PathNotFoundError) {
+		if errors.Is(err, PathNotFoundError) || errors.Is(err, EmptyPathError) {
 			resp.StatusCode = 404
 			resp.Message = "Not Found"
 		}
 	}
+
+	if pathIdentifier == EchoPath {
+		resp.SetBody(pathItems)
+	}
+
 	return resp
 }
 
